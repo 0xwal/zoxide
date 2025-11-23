@@ -17,6 +17,11 @@ impl Run for Edit {
                 match cmd {
                     EditCommand::Decrement { path } => db.add(path, -1.0, now),
                     EditCommand::Delete { path } => {
+                        if let Some(path) =
+                        std::env::home_dir().map(|home| path.replace("~", home.to_str().unwrap()))
+                        {
+                            print!("{path}");
+                        }
                         db.remove(path);
                     }
                     EditCommand::Increment { path } => db.add(path, 1.0, now),

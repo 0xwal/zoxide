@@ -57,11 +57,22 @@ impl<'a> DirDisplay<'a> {
 
 impl Display for DirDisplay<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let home = std::env::home_dir();
         if let Some(now) = self.now {
             let score = self.dir.score(now).clamp(0.0, 9999.0);
             write!(f, "{score:>6.1}{}", self.separator)?;
         }
-        write!(f, "{}", self.dir.path)
+        let path = if let Some(home) = home {
+            let home_dir = home.to_str().unwrap_or_default();
+            if self.dir.path.starts_with(home_dir) {
+                format!("~{}", &self.dir.path[home_dir.len()..])
+            } else {
+                self.dir.path.to_string()
+            }
+        } else {
+            self.dir.path.to_string()
+        };
+        write!(f, "{}", path)
     }
 }
 

@@ -43,6 +43,12 @@ impl Query {
             }
         };
 
+        if let Some(path) =
+            std::env::home_dir().map(|home| selection.replace("~", home.to_str().unwrap()))
+        {
+            print!("{path}");
+        }
+
         if self.score {
             print!("{selection}");
         } else {
