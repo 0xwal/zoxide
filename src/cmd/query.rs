@@ -98,10 +98,11 @@ impl Query {
 
     fn get_fzf() -> Result<FzfChild> {
         let mut fzf = Fzf::new()?;
+        let with_preview = config::fzf_with_preview();
         if let Some(fzf_opts) = config::fzf_opts() {
             fzf.env("FZF_DEFAULT_OPTS", fzf_opts)
         } else {
-            fzf.args([
+            let fzf = fzf.args([
                 // Search mode
                 "--exact",
                 // Search result
@@ -119,8 +120,8 @@ impl Query {
                 "--tabstop=1",
                 // Scripting
                 "--exit-0",
-            ])
-            .enable_preview()
+            ]);
+            if with_preview { fzf.enable_preview() } else { fzf }
         }
         .spawn()
     }

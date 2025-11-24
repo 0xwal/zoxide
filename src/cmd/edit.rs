@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use anyhow::Result;
 
 use crate::cmd::{Edit, EditCommand, Run};
+use crate::config;
 use crate::db::Database;
 use crate::error::BrokenPipeHandler;
 use crate::util::{self, Fzf, FzfChild};
@@ -17,8 +18,8 @@ impl Run for Edit {
                 match cmd {
                     EditCommand::Decrement { path } => db.add(path, -1.0, now),
                     EditCommand::Delete { path } => {
-                        if let Some(path) =
-                        std::env::home_dir().map(|home| path.replace("~", home.to_str().unwrap()))
+                        if let Some(path) = std::env::home_dir()
+                            .map(|home| path.replace("~", home.to_str().unwrap()))
                         {
                             print!("{path}");
                         }
@@ -48,7 +49,9 @@ impl Run for Edit {
 
 impl Edit {
     fn get_fzf() -> Result<FzfChild> {
-        Fzf::new()?
+        let with_preview = config::fzf_with_preview();
+        let mut fzf = Fzf::new()?;
+        let fzf = fzf
             .args([
                 // Search mode
                 "--exact",
@@ -82,8 +85,7 @@ ctrl-w:increment\tctrl-s:decrement
                 // Display
                 "--color=label:bold",
                 "--tabstop=1",
-            ])
-            .enable_preview()
-            .spawn()
+            ]);
+        if with_preview { fzf.enable_preview().spawn() } else { fzf.spawn() }
     }
 }
