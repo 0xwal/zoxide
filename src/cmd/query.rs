@@ -43,11 +43,13 @@ impl Query {
             }
         };
 
-        if let Some(path) =
+        let selection = if let Some(path) =
             std::env::home_dir().map(|home| selection.replace("~", home.to_str().unwrap()))
         {
-            print!("{path}");
-        }
+            path
+        } else {
+            selection
+        };
 
         if self.score {
             print!("{selection}");
@@ -78,7 +80,17 @@ impl Query {
             dir = stream.next().context("you are already in the only match")?;
         }
 
+        
+
         let dir = if self.score { dir.display().with_score(now) } else { dir.display() };
+
+        let dir = match std::env::home_dir() {
+            Some(home) => {
+                dir.to_string().replace("~", home.to_str().unwrap())
+            }
+            None => dir.to_string(),
+        };
+
         writeln!(handle, "{dir}").pipe_exit("stdout")
     }
 
